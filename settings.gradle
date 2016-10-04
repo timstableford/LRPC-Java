@@ -1,0 +1,4 @@
+rootProject.name = 'LightweightRPCLib'
+include 'rpclib'
+include 'rpctests'
+
