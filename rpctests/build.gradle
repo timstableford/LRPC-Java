@@ -19,6 +19,12 @@ jar {
   }
 }
 
+task runApp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'uk.co.tstableford.rpctests.Test'
+}
+
 repositories {
     mavenCentral()
 }
