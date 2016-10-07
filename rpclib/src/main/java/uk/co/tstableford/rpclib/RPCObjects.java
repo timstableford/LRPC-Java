@@ -3,8 +3,8 @@ package uk.co.tstableford.rpclib;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-public class ObjectTypes {
-    public static class RPCString implements Object.ObjectType {
+public class RPCObjects {
+    public static class RPCString implements RPCObject.ObjectType {
         private String data;
 
         public RPCString(String data) {
@@ -30,14 +30,14 @@ public class ObjectTypes {
         }
 
         @Override
-        public Object.Type getType() {
-            return Object.Type.STRING;
+        public RPCObject.Type getType() {
+            return RPCObject.Type.STRING;
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data.length() > 255) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             ByteBuffer buffer = ByteBuffer.allocate(this.getSize() + 1);
             buffer.put(this.data.getBytes(Charset.forName("UTF-8")));
@@ -46,7 +46,7 @@ public class ObjectTypes {
         }
 
         @Override
-        public Object.ObjectType parse(ByteBuffer buffer, int offset, int size) {
+        public RPCObject.ObjectType parse(ByteBuffer buffer, int offset, int size) {
             byte strArray[] = new byte[size];
             buffer.position(offset);
             buffer.get(strArray, 0, size);
@@ -64,7 +64,7 @@ public class ObjectTypes {
         }
     }
 
-    public static class RPCFloat implements Object.ObjectType {
+    public static class RPCFloat implements RPCObject.ObjectType {
         protected float data;
         public RPCFloat(float data) {
             this.data = data;
@@ -88,18 +88,18 @@ public class ObjectTypes {
         }
 
         @Override
-        public Object.Type getType() {
-            return Object.Type.FLOAT;
+        public RPCObject.Type getType() {
+            return RPCObject.Type.FLOAT;
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             ByteBuffer buffer = ByteBuffer.allocate(this.getSize());
             return buffer.putFloat(this.data);
         }
 
         @Override
-        public Object.ObjectType parse(ByteBuffer buffer, int offset, int size) {
+        public RPCObject.ObjectType parse(ByteBuffer buffer, int offset, int size) {
             this.data = buffer.getFloat(offset);
             return this;
         }
@@ -110,10 +110,10 @@ public class ObjectTypes {
         }
     }
 
-    private static abstract class Number implements Object.ObjectType {
+    private static abstract class Number implements RPCObject.ObjectType {
         protected long data;
-        protected Object.Type type;
-        public Number(Object.Type type, long data) {
+        protected RPCObject.Type type;
+        public Number(RPCObject.Type type, long data) {
             this.data = data;
             this.type = type;
         }
@@ -136,13 +136,13 @@ public class ObjectTypes {
         }
 
         @Override
-        public Object.Type getType() {
+        public RPCObject.Type getType() {
             return this.type;
         }
 
         public abstract void parse(ByteBuffer buffer, int offset);
         @Override
-        public Object.ObjectType parse(ByteBuffer buffer, int offset, int size) {
+        public RPCObject.ObjectType parse(ByteBuffer buffer, int offset, int size) {
             this.parse(buffer, offset);
             return this;
         }
@@ -155,13 +155,13 @@ public class ObjectTypes {
 
     public static class RPCInt8 extends Number {
         public RPCInt8(long data) {
-            super(Object.Type.INT8, data);
+            super(RPCObject.Type.INT8, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > Byte.MAX_VALUE || this.data < Byte.MIN_VALUE) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).put((byte)(this.data & 0xff));
         }
@@ -174,13 +174,13 @@ public class ObjectTypes {
 
     public static class RPCUInt8 extends Number {
         public RPCUInt8(long data) {
-            super(Object.Type.UINT8, data);
+            super(RPCObject.Type.UINT8, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > 255 || this.data < 0) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).put((byte)(this.data & 0xff));
         }
@@ -193,13 +193,13 @@ public class ObjectTypes {
 
     public static class RPCInt16 extends Number {
         public RPCInt16(long data) {
-            super(Object.Type.INT16, data);
+            super(RPCObject.Type.INT16, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > Short.MAX_VALUE || this.data < Short.MIN_VALUE) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).putShort((short)this.data);
         }
@@ -212,13 +212,13 @@ public class ObjectTypes {
 
     public static class RPCUInt16 extends Number {
         public RPCUInt16(long data) {
-            super(Object.Type.UINT16, data);
+            super(RPCObject.Type.UINT16, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > 65535 || this.data < 0) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).putShort((short) (this.data & 0xffff));
         }
@@ -231,13 +231,13 @@ public class ObjectTypes {
 
     public static class RPCInt32 extends Number {
         public RPCInt32(long data) {
-            super(Object.Type.INT32, data);
+            super(RPCObject.Type.INT32, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > Integer.MAX_VALUE || this.data < Integer.MIN_VALUE) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).putInt((int)this.data);
         }
@@ -250,13 +250,13 @@ public class ObjectTypes {
 
     public static class RPCUInt32 extends Number {
         public RPCUInt32(long data) {
-            super(Object.Type.UINT32, data);
+            super(RPCObject.Type.UINT32, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > 4294967295L || this.data < 0) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).putInt((int) (this.data & 0xffffffffL));
         }
@@ -269,13 +269,13 @@ public class ObjectTypes {
 
     public static class RPCInt64 extends Number {
         public RPCInt64(long data) {
-            super(Object.Type.INT64, data);
+            super(RPCObject.Type.INT64, data);
         }
 
         @Override
-        public ByteBuffer getBytes() throws Object.InvalidTypeException {
+        public ByteBuffer getBytes() throws RPCObject.InvalidTypeException {
             if (this.data > Integer.MAX_VALUE || this.data < Integer.MIN_VALUE) {
-                throw new Object.InvalidTypeException();
+                throw new RPCObject.InvalidTypeException();
             }
             return ByteBuffer.allocate(this.getSize()).putLong(this.data);
         }

@@ -4,14 +4,14 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Object {
+public class RPCObject {
     private List<ObjectType> data;
 
-    public Object(List<ObjectType> data) {
+    public RPCObject(List<ObjectType> data) {
         this.data = data;
     }
 
-    public Object() {
+    public RPCObject() {
         this(new ArrayList<ObjectType>());
     }
 
@@ -58,20 +58,20 @@ public class Object {
 
     public void unserialize(ByteBuffer buffer) throws InvalidTypeException {
         buffer.position(0);
-        ObjectTypes.RPCUInt8 size = new ObjectTypes.RPCUInt8(0);
+        RPCObjects.RPCUInt8 size = new RPCObjects.RPCUInt8(0);
         size.parse(buffer, 0);
         this.data = new ArrayList<>((int)size.getData());
 
         int numStrings = 0;
         int sizes[] = new int[(int) size.getData()];
         for (int i = 0; i < size.getData(); i++) {
-            ObjectTypes.RPCUInt8 typeId = new ObjectTypes.RPCUInt8(0);
+            RPCObjects.RPCUInt8 typeId = new RPCObjects.RPCUInt8(0);
             typeId.parse(buffer, i + 1);
             Type type = Type.findType((int) typeId.getData());
             if (type != null) {
                 sizes[i] = type.getSize();
                 if (type == Type.STRING) {
-                    ObjectTypes.RPCUInt8 stringSize = new ObjectTypes.RPCUInt8(0);
+                    RPCObjects.RPCUInt8 stringSize = new RPCObjects.RPCUInt8(0);
                     stringSize.parse(buffer, (int) (1 + size.getData() + numStrings));
                     sizes[i] = (int) stringSize.getData();
                     numStrings++;
@@ -82,7 +82,7 @@ public class Object {
         // Set to the start of the data section.
         int dataOffset = (int) (1 + size.getData() + numStrings);
         for (int i = 0; i < size.getData(); i++) {
-            ObjectTypes.RPCUInt8 typeId = new ObjectTypes.RPCUInt8(0);
+            RPCObjects.RPCUInt8 typeId = new RPCObjects.RPCUInt8(0);
             typeId.parse(buffer, 1 + i);
             Type type = Type.findType((int)typeId.getData());
 
@@ -91,31 +91,31 @@ public class Object {
             }
             switch (type) {
                 case STRING:
-                    this.data.add(i, new ObjectTypes.RPCString(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCString(buffer, dataOffset, sizes[i]));
                     break;
                 case INT8:
-                    this.data.add(i, new ObjectTypes.RPCInt8(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCInt8(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case UINT8:
-                    this.data.add(i, new ObjectTypes.RPCUInt8(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCUInt8(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case INT16:
-                    this.data.add(i, new ObjectTypes.RPCInt16(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCInt16(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case UINT16:
-                    this.data.add(i, new ObjectTypes.RPCUInt16(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCUInt16(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case INT32:
-                    this.data.add(i, new ObjectTypes.RPCInt32(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCInt32(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case UINT32:
-                    this.data.add(i, new ObjectTypes.RPCUInt32(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCUInt32(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case INT64:
-                    this.data.add(i, new ObjectTypes.RPCInt64(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCInt64(0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case FLOAT:
-                    this.data.add(i, new ObjectTypes.RPCFloat(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new RPCObjects.RPCFloat(0).parse(buffer, dataOffset, sizes[i]));
                 default:
                     throw new InvalidTypeException("Unsupported type - " + type.toString());
             }
@@ -135,13 +135,13 @@ public class Object {
 
         ByteBuffer buffer = ByteBuffer.allocate(dataSize);
 
-        buffer.put(new ObjectTypes.RPCUInt8(this.data.size()).getBytes().array(), 0, Type.UINT8.getSize());
+        buffer.put(new RPCObjects.RPCUInt8(this.data.size()).getBytes().array(), 0, Type.UINT8.getSize());
         for (ObjectType object: this.data) {
-            buffer.put(new ObjectTypes.RPCUInt8(object.getType().getId()).getBytes().array(), 0, Type.UINT8.getSize());
+            buffer.put(new RPCObjects.RPCUInt8(object.getType().getId()).getBytes().array(), 0, Type.UINT8.getSize());
         }
         for (ObjectType object: this.data) {
             if (object.getType() == Type.STRING) {
-                buffer.put(new ObjectTypes.RPCUInt8(object.getSize()).getBytes().array(), 0, Type.UINT8.getSize());
+                buffer.put(new RPCObjects.RPCUInt8(object.getSize()).getBytes().array(), 0, Type.UINT8.getSize());
             }
         }
         for (ObjectType object: this.data) {
