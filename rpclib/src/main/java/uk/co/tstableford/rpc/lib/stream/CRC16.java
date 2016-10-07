@@ -1,4 +1,4 @@
-package uk.co.tstableford.rpclib.stream;
+package uk.co.tstableford.rpc.lib.stream;
 
 public class CRC16 {
 

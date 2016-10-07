@@ -1,12 +1,11 @@
 package uk.co.tstableford.rpctests;
 
-import uk.co.tstableford.rpclib.RPC;
-import uk.co.tstableford.rpclib.object.LObject;
-import uk.co.tstableford.rpclib.object.LObjects;
-import uk.co.tstableford.rpclib.object.LType;
-import uk.co.tstableford.rpclib.serializer.LSerializer;
-import uk.co.tstableford.rpclib.stream.StreamConnector;
-import uk.co.tstableford.rpclib.stream.StreamParser;
+import uk.co.tstableford.rpc.lib.RPC;
+import uk.co.tstableford.rpc.lib.object.LObjects;
+import uk.co.tstableford.rpc.lib.object.LType;
+import uk.co.tstableford.rpc.lib.serializer.LSerializer;
+import uk.co.tstableford.rpc.lib.stream.StreamConnector;
+import uk.co.tstableford.rpc.lib.stream.StreamParser;
 
 import java.nio.ByteBuffer;
 

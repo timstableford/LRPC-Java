@@ -1,9 +1,9 @@
-package uk.co.tstableford.rpclib.stream;
+package uk.co.tstableford.rpc.lib.stream;
 
-import uk.co.tstableford.rpclib.object.LObject;
-import uk.co.tstableford.rpclib.object.LObjects;
-import uk.co.tstableford.rpclib.object.LType;
-import uk.co.tstableford.rpclib.serializer.LSerializer;
+import uk.co.tstableford.rpc.lib.object.LObject;
+import uk.co.tstableford.rpc.lib.object.LObjects;
+import uk.co.tstableford.rpc.lib.object.LType;
+import uk.co.tstableford.rpc.lib.serializer.LSerializer;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;

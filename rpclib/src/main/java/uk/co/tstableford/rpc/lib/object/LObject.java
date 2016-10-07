@@ -1,6 +1,6 @@
-package uk.co.tstableford.rpclib.object;
+package uk.co.tstableford.rpc.lib.object;
 
-import uk.co.tstableford.rpclib.serializer.LSerializer;
+import uk.co.tstableford.rpc.lib.serializer.LSerializer;
 
 import java.nio.ByteBuffer;
 

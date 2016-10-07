@@ -1,7 +1,7 @@
-package uk.co.tstableford.rpclib;
+package uk.co.tstableford.rpc.lib;
 
-import uk.co.tstableford.rpclib.serializer.LSerializer;
-import uk.co.tstableford.rpclib.stream.StreamParser;
+import uk.co.tstableford.rpc.lib.stream.StreamParser;
+import uk.co.tstableford.rpc.lib.serializer.LSerializer;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;

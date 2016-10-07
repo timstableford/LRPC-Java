@@ -1,8 +1,8 @@
-package uk.co.tstableford.rpclib.serializer;
+package uk.co.tstableford.rpc.lib.serializer;
 
-import uk.co.tstableford.rpclib.object.LObject;
-import uk.co.tstableford.rpclib.object.LObjects;
-import uk.co.tstableford.rpclib.object.LType;
+import uk.co.tstableford.rpc.lib.object.LObject;
+import uk.co.tstableford.rpc.lib.object.LObjects;
+import uk.co.tstableford.rpc.lib.object.LType;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
