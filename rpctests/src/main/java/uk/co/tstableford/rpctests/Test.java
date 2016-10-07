@@ -1,9 +1,10 @@
 package uk.co.tstableford.rpctests;
 
-import uk.co.tstableford.rpclib.LSerializer;
-import uk.co.tstableford.rpclib.LObjects;
-import uk.co.tstableford.rpclib.LType;
-import uk.co.tstableford.rpclib.StreamParser;
+import uk.co.tstableford.rpclib.object.LObjects;
+import uk.co.tstableford.rpclib.object.LType;
+import uk.co.tstableford.rpclib.serializer.LSerializer;
+import uk.co.tstableford.rpclib.stream.StreamConnector;
+import uk.co.tstableford.rpclib.stream.StreamParser;
 
 import java.nio.ByteBuffer;
 
@@ -29,7 +30,7 @@ public class Test {
     public static void testStreamParser() {
         final byte testCallBuffer[] = { 0x0, 0x8, 0x0, 0x19, 0x79, (byte) 0xae, 0x5, 0x5, 0x2, 0x3, 0x4, 0x1, 0xc, 0x0, 0xa, (byte) 0xf6, 0xa, 0x1, 0x40, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x0 };
 
-        StreamParser.StreamConnector connector = new StreamParser.StreamConnector() {
+        StreamConnector connector = new StreamConnector() {
             int testCallIndex = 0;
             @Override
             public int readData() {

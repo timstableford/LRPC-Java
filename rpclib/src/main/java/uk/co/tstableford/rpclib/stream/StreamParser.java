@@ -1,4 +1,9 @@
-package uk.co.tstableford.rpclib;
+package uk.co.tstableford.rpclib.stream;
+
+import uk.co.tstableford.rpclib.object.LObject;
+import uk.co.tstableford.rpclib.object.LObjects;
+import uk.co.tstableford.rpclib.object.LType;
+import uk.co.tstableford.rpclib.serializer.LSerializer;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -78,11 +83,6 @@ public class StreamParser {
         }
 
         return readByte;
-    }
-
-    public interface StreamConnector {
-        int readData();
-        int writeData(byte data[]);
     }
 
     public interface StreamHandler {

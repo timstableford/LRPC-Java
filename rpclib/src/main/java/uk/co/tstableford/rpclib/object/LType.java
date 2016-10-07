@@ -1,4 +1,4 @@
-package uk.co.tstableford.rpclib;
+package uk.co.tstableford.rpclib.object;
 
 public enum LType {
     STRING(0x01, 0x01),
