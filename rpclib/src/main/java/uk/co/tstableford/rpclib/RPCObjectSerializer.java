@@ -2,16 +2,21 @@ package uk.co.tstableford.rpclib;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class RPCObject {
+public class RPCObjectSerializer {
     private List<ObjectType> data;
 
-    public RPCObject(List<ObjectType> data) {
+    public RPCObjectSerializer(List<ObjectType> data) {
         this.data = data;
     }
 
-    public RPCObject() {
+    public RPCObjectSerializer(RPCObjectSerializer.ObjectType... objects) {
+        this.data = Arrays.asList(objects);
+    }
+
+    public RPCObjectSerializer() {
         this(new ArrayList<ObjectType>());
     }
 
@@ -22,7 +27,7 @@ public class RPCObject {
     private int getStringOffset(int index) {
         int count = 0;
         for (int i = 0; i < index && i < this.data.size(); i++) {
-            if (this.data.get(i).getType() == Type.STRING) {
+            if (this.data.get(i).getType() == RPCType.STRING) {
                 count++;
             }
         }
@@ -67,10 +72,10 @@ public class RPCObject {
         for (int i = 0; i < size.getData(); i++) {
             RPCObjects.RPCUInt8 typeId = new RPCObjects.RPCUInt8(0);
             typeId.parse(buffer, i + 1);
-            Type type = Type.findType((int) typeId.getData());
+            RPCType type = RPCType.findType((int) typeId.getData());
             if (type != null) {
                 sizes[i] = type.getSize();
-                if (type == Type.STRING) {
+                if (type == RPCType.STRING) {
                     RPCObjects.RPCUInt8 stringSize = new RPCObjects.RPCUInt8(0);
                     stringSize.parse(buffer, (int) (1 + size.getData() + numStrings));
                     sizes[i] = (int) stringSize.getData();
@@ -84,7 +89,7 @@ public class RPCObject {
         for (int i = 0; i < size.getData(); i++) {
             RPCObjects.RPCUInt8 typeId = new RPCObjects.RPCUInt8(0);
             typeId.parse(buffer, 1 + i);
-            Type type = Type.findType((int)typeId.getData());
+            RPCType type = RPCType.findType((int)typeId.getData());
 
             if (type == null) {
                 throw new InvalidTypeException("Unknown type - " + typeId.getData());
@@ -94,25 +99,13 @@ public class RPCObject {
                     this.data.add(i, new RPCObjects.RPCString(buffer, dataOffset, sizes[i]));
                     break;
                 case INT8:
-                    this.data.add(i, new RPCObjects.RPCInt8(0).parse(buffer, dataOffset, sizes[i]));
-                    break;
                 case UINT8:
-                    this.data.add(i, new RPCObjects.RPCUInt8(0).parse(buffer, dataOffset, sizes[i]));
-                    break;
                 case INT16:
-                    this.data.add(i, new RPCObjects.RPCInt16(0).parse(buffer, dataOffset, sizes[i]));
-                    break;
                 case UINT16:
-                    this.data.add(i, new RPCObjects.RPCUInt16(0).parse(buffer, dataOffset, sizes[i]));
-                    break;
                 case INT32:
-                    this.data.add(i, new RPCObjects.RPCInt32(0).parse(buffer, dataOffset, sizes[i]));
-                    break;
                 case UINT32:
-                    this.data.add(i, new RPCObjects.RPCUInt32(0).parse(buffer, dataOffset, sizes[i]));
-                    break;
                 case INT64:
-                    this.data.add(i, new RPCObjects.RPCInt64(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(RPCObjects.Int(type, 0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case FLOAT:
                     this.data.add(i, new RPCObjects.RPCFloat(0).parse(buffer, dataOffset, sizes[i]));
@@ -128,20 +121,20 @@ public class RPCObject {
             throw new InvalidTypeException("Too many data items!");
         }
 
-        int dataSize = Type.UINT8.getSize(); // Number of items.
-        dataSize += this.data.size() * Type.UINT8.getSize(); // One byte per item for identifier.
-        dataSize += this.getStringOffset(this.data.size()) * Type.STRING.getSize(); // Get the number of strings. Multiple by the number of bytes used for string size.
+        int dataSize = RPCType.UINT8.getSize(); // Number of items.
+        dataSize += this.data.size() * RPCType.UINT8.getSize(); // One byte per item for identifier.
+        dataSize += this.getStringOffset(this.data.size()) * RPCType.STRING.getSize(); // Get the number of strings. Multiple by the number of bytes used for string size.
         dataSize += this.getDataSize();
 
         ByteBuffer buffer = ByteBuffer.allocate(dataSize);
 
-        buffer.put(new RPCObjects.RPCUInt8(this.data.size()).getBytes().array(), 0, Type.UINT8.getSize());
+        buffer.put(new RPCObjects.RPCUInt8(this.data.size()).getBytes().array(), 0, RPCType.UINT8.getSize());
         for (ObjectType object: this.data) {
-            buffer.put(new RPCObjects.RPCUInt8(object.getType().getId()).getBytes().array(), 0, Type.UINT8.getSize());
+            buffer.put(new RPCObjects.RPCUInt8(object.getType().getId()).getBytes().array(), 0, RPCType.UINT8.getSize());
         }
         for (ObjectType object: this.data) {
-            if (object.getType() == Type.STRING) {
-                buffer.put(new RPCObjects.RPCUInt8(object.getSize()).getBytes().array(), 0, Type.UINT8.getSize());
+            if (object.getType() == RPCType.STRING) {
+                buffer.put(new RPCObjects.RPCUInt8(object.getSize()).getBytes().array(), 0, RPCType.UINT8.getSize());
             }
         }
         for (ObjectType object: this.data) {
@@ -151,42 +144,6 @@ public class RPCObject {
         buffer.position(0);
 
         return buffer;
-    }
-
-    public enum Type {
-        STRING(0x01, 0x01),
-        INT8(0x02, 0x01),
-        UINT8(0x03, 0x01),
-        INT16(0x04, 0x02),
-        UINT16(0x05, 0x02),
-        INT32(0x06, 0x04),
-        UINT32(0x07, 0x04),
-        INT64(0x08, 0x08),
-        UINT64(0x09, 0x08),
-        FLOAT(0x0c, 0x04);
-
-        private int size, id;
-        Type(int id, int size) {
-            this.size = size;
-            this.id = id;
-        }
-
-        public int getSize() {
-            return this.size;
-        }
-
-        public int getId() {
-            return this.id;
-        }
-
-        public static Type findType(int typeId) {
-            for (Type type: values()) {
-                if (type.id == typeId) {
-                    return type;
-                }
-            }
-            return null;
-        }
     }
 
     @Override
@@ -204,7 +161,7 @@ public class RPCObject {
 
     public interface ObjectType {
         int getSize();
-        Type getType();
+        RPCType getType();
         ByteBuffer getBytes() throws InvalidTypeException;
         ObjectType parse(ByteBuffer buffer, int offset, int size);
     }

@@ -1,27 +1,25 @@
 package uk.co.tstableford.rpctests;
 
-import uk.co.tstableford.rpclib.RPCObject;
+import uk.co.tstableford.rpclib.RPCObjectSerializer;
 import uk.co.tstableford.rpclib.RPCObjects;
+import uk.co.tstableford.rpclib.RPCType;
 import uk.co.tstableford.rpclib.StreamParser;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Test {
     public static void main(String args[]) {
-        List<RPCObject.ObjectType> objs = new ArrayList<>();
-        objs.add(new RPCObjects.RPCUInt16(8));
-        objs.add(new RPCObjects.RPCString("Hello world!"));
-        objs.add(new RPCObjects.RPCInt8(10));
-        RPCObject obj = new RPCObject(objs);
+        RPCObjectSerializer obj = new RPCObjectSerializer(
+                RPCObjects.Int(RPCType.UINT16, 8),
+                RPCObjects.String("Hello world!"),
+                RPCObjects.Int(RPCType.INT8, 10));
         try {
             ByteBuffer buffer = obj.serialize();
 
-            RPCObject rebuiltObj = new RPCObject();
+            RPCObjectSerializer rebuiltObj = new RPCObjectSerializer();
             rebuiltObj.unserialize(buffer);
             System.out.println(rebuiltObj.toString());
-        } catch (RPCObject.InvalidTypeException e) {
+        } catch (RPCObjectSerializer.InvalidTypeException e) {
             e.printStackTrace();
         }
 
@@ -53,10 +51,10 @@ public class Test {
         parser.addHandler(8, new StreamParser.StreamHandler() {
             @Override
             public void onPacket(int type, int size, ByteBuffer buffer) {
-                RPCObject obj = new RPCObject();
+                RPCObjectSerializer obj = new RPCObjectSerializer();
                 try {
                     obj.unserialize(buffer);
-                } catch (RPCObject.InvalidTypeException e) {
+                } catch (RPCObjectSerializer.InvalidTypeException e) {
                     e.printStackTrace();
                 }
                 System.out.println("Type received  - " + type);
