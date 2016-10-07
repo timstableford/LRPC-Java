@@ -6,21 +6,21 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LSerializer {
-    private List<ObjectType> data;
+    private List<LObject> data;
 
-    public LSerializer(List<ObjectType> data) {
+    public LSerializer(List<LObject> data) {
         this.data = data;
     }
 
-    public LSerializer(LSerializer.ObjectType... objects) {
+    public LSerializer(LObject... objects) {
         this.data = Arrays.asList(objects);
     }
 
     public LSerializer() {
-        this(new ArrayList<ObjectType>());
+        this(new ArrayList<LObject>());
     }
 
-    public void setData(List<ObjectType> data) {
+    public void setData(List<LObject> data) {
         this.data = data;
     }
 
@@ -35,13 +35,13 @@ public class LSerializer {
         return count;
     }
 
-    public List<ObjectType> getData() {
+    public List<LObject> getData() {
         return this.data;
     }
 
     public int getDataSize() {
         int size = 0;
-        for (ObjectType obj: this.data) {
+        for (LObject obj: this.data) {
             size += obj.getSize();
         }
         return size;
@@ -129,15 +129,15 @@ public class LSerializer {
         ByteBuffer buffer = ByteBuffer.allocate(dataSize);
 
         buffer.put(new LObjects.RPCUInt8(this.data.size()).getBytes().array(), 0, LType.UINT8.getSize());
-        for (ObjectType object: this.data) {
+        for (LObject object: this.data) {
             buffer.put(new LObjects.RPCUInt8(object.getType().getId()).getBytes().array(), 0, LType.UINT8.getSize());
         }
-        for (ObjectType object: this.data) {
+        for (LObject object: this.data) {
             if (object.getType() == LType.STRING) {
                 buffer.put(new LObjects.RPCUInt8(object.getSize()).getBytes().array(), 0, LType.UINT8.getSize());
             }
         }
-        for (ObjectType object: this.data) {
+        for (LObject object: this.data) {
             buffer.put(object.getBytes().array(), 0, object.getSize());
         }
 
@@ -157,13 +157,6 @@ public class LSerializer {
                     .append("\n");
         }
         return output.toString();
-    }
-
-    public interface ObjectType {
-        int getSize();
-        LType getType();
-        ByteBuffer getBytes() throws InvalidTypeException;
-        ObjectType parse(ByteBuffer buffer, int offset, int size);
     }
 
     public static class InvalidTypeException extends Exception {

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 public class LObjects {
-    public static class RPCString implements LSerializer.ObjectType {
+    public static class RPCString implements LObject {
         private String data;
 
         public RPCString(String data) {
@@ -46,7 +46,7 @@ public class LObjects {
         }
 
         @Override
-        public LSerializer.ObjectType parse(ByteBuffer buffer, int offset, int size) {
+        public LObject parse(ByteBuffer buffer, int offset, int size) {
             byte strArray[] = new byte[size];
             buffer.position(offset);
             buffer.get(strArray, 0, size);
@@ -64,7 +64,7 @@ public class LObjects {
         }
     }
 
-    public static class RPCFloat implements LSerializer.ObjectType {
+    public static class RPCFloat implements LObject {
         protected float data;
         public RPCFloat(float data) {
             this.data = data;
@@ -99,7 +99,7 @@ public class LObjects {
         }
 
         @Override
-        public LSerializer.ObjectType parse(ByteBuffer buffer, int offset, int size) {
+        public LObject parse(ByteBuffer buffer, int offset, int size) {
             this.data = buffer.getFloat(offset);
             return this;
         }
@@ -110,7 +110,7 @@ public class LObjects {
         }
     }
 
-    private static abstract class Number implements LSerializer.ObjectType {
+    private static abstract class Number implements LObject {
         protected long data;
         protected LType type;
         public Number(LType type, long data) {
@@ -142,7 +142,7 @@ public class LObjects {
 
         public abstract void parse(ByteBuffer buffer, int offset);
         @Override
-        public LSerializer.ObjectType parse(ByteBuffer buffer, int offset, int size) {
+        public LObject parse(ByteBuffer buffer, int offset, int size) {
             this.parse(buffer, offset);
             return this;
         }
@@ -286,7 +286,7 @@ public class LObjects {
         }
     }
 
-    public static LSerializer.ObjectType Int(LType type, long number) {
+    public static LObject Int(LType type, long number) {
         switch (type) {
             case INT8:
                 return new RPCInt8(number);
@@ -307,11 +307,11 @@ public class LObjects {
         }
     }
 
-    public static LSerializer.ObjectType Float(float number) {
+    public static LObject Float(float number) {
         return new RPCFloat(number);
     }
 
-    public static LSerializer.ObjectType String(String value) {
+    public static LObject String(String value) {
         return new RPCString(value);
     }
 }
