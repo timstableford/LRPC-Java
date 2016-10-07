@@ -1,4 +1,5 @@
 rootProject.name = 'LightweightRPCLib'
 include 'rpclib'
 include 'rpctests'
+include 'rpc_connectors_pc'
 

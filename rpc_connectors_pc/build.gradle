@@ -1,0 +1,21 @@
+group 'TStableford'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.fazecast:jSerialComm:1.3.11'
+    compile project(':rpclib')
+}
+
+model {
+    components {
+        main(JvmLibrarySpec)
+    }
+}
