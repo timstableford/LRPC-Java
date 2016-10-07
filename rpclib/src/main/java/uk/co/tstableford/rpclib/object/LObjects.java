@@ -6,14 +6,14 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 public class LObjects {
-    public static class RPCString implements LObject {
+    public static class LString implements LObject {
         private String data;
 
-        public RPCString(String data) {
+        public LString(String data) {
             this.data = data;
         }
 
-        public RPCString(ByteBuffer buffer, int offset, int size) {
+        public LString(ByteBuffer buffer, int offset, int size) {
             this.parse(buffer, offset, size);
         }
 
@@ -48,7 +48,7 @@ public class LObjects {
         }
 
         @Override
-        public LObject parse(ByteBuffer buffer, int offset, int size) {
+        public LString parse(ByteBuffer buffer, int offset, int size) {
             byte strArray[] = new byte[size];
             buffer.position(offset);
             buffer.get(strArray, 0, size);
@@ -66,13 +66,13 @@ public class LObjects {
         }
     }
 
-    public static class RPCFloat implements LObject {
+    public static class LFloat implements LObject {
         protected float data;
-        public RPCFloat(float data) {
+        public LFloat(float data) {
             this.data = data;
         }
 
-        public RPCFloat(ByteBuffer buffer, int offset, int size) {
+        public LFloat(ByteBuffer buffer, int offset, int size) {
             this.parse(buffer, offset, size);
         }
 
@@ -101,7 +101,7 @@ public class LObjects {
         }
 
         @Override
-        public LObject parse(ByteBuffer buffer, int offset, int size) {
+        public LFloat parse(ByteBuffer buffer, int offset, int size) {
             this.data = buffer.getFloat(offset);
             return this;
         }
@@ -112,15 +112,15 @@ public class LObjects {
         }
     }
 
-    private static abstract class Number implements LObject {
+    public static abstract class LNumber implements LObject {
         protected long data;
         protected LType type;
-        public Number(LType type, long data) {
+        public LNumber(LType type, long data) {
             this.data = data;
             this.type = type;
         }
 
-        public Number(ByteBuffer buffer, int offset) {
+        public LNumber(ByteBuffer buffer, int offset) {
             this.parse(buffer, offset);
         }
 
@@ -144,7 +144,7 @@ public class LObjects {
 
         public abstract void parse(ByteBuffer buffer, int offset);
         @Override
-        public LObject parse(ByteBuffer buffer, int offset, int size) {
+        public LNumber parse(ByteBuffer buffer, int offset, int size) {
             this.parse(buffer, offset);
             return this;
         }
@@ -155,8 +155,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCInt8 extends Number {
-        public RPCInt8(long data) {
+    public static class LInt8 extends LNumber {
+        public LInt8(long data) {
             super(LType.INT8, data);
         }
 
@@ -174,8 +174,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCUInt8 extends Number {
-        public RPCUInt8(long data) {
+    public static class LUInt8 extends LNumber {
+        public LUInt8(long data) {
             super(LType.UINT8, data);
         }
 
@@ -193,8 +193,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCInt16 extends Number {
-        public RPCInt16(long data) {
+    public static class LInt16 extends LNumber {
+        public LInt16(long data) {
             super(LType.INT16, data);
         }
 
@@ -212,8 +212,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCUInt16 extends Number {
-        public RPCUInt16(long data) {
+    public static class LUInt16 extends LNumber {
+        public LUInt16(long data) {
             super(LType.UINT16, data);
         }
 
@@ -231,8 +231,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCInt32 extends Number {
-        public RPCInt32(long data) {
+    public static class LInt32 extends LNumber {
+        public LInt32(long data) {
             super(LType.INT32, data);
         }
 
@@ -250,8 +250,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCUInt32 extends Number {
-        public RPCUInt32(long data) {
+    public static class LUInt32 extends LNumber {
+        public LUInt32(long data) {
             super(LType.UINT32, data);
         }
 
@@ -269,8 +269,8 @@ public class LObjects {
         }
     }
 
-    public static class RPCInt64 extends Number {
-        public RPCInt64(long data) {
+    public static class LInt64 extends LNumber {
+        public LInt64(long data) {
             super(LType.INT64, data);
         }
 
@@ -288,32 +288,46 @@ public class LObjects {
         }
     }
 
-    public static LObject Int(LType type, long number) {
+    public static LNumber Int(LType type, long number) {
         switch (type) {
             case INT8:
-                return new RPCInt8(number);
+                return new LInt8(number);
             case UINT8:
-                return new RPCUInt8(number);
+                return new LUInt8(number);
             case INT16:
-                return new RPCInt16(number);
+                return new LInt16(number);
             case UINT16:
-                return new RPCUInt16(number);
+                return new LUInt16(number);
             case INT32:
-                return new RPCInt32(number);
+                return new LInt32(number);
             case UINT32:
-                return new RPCUInt32(number);
+                return new LUInt32(number);
             case INT64:
-                return new RPCInt64(number);
+                return new LInt64(number);
             default:
                 return null;
         }
     }
 
-    public static LObject Float(float number) {
-        return new RPCFloat(number);
+    public static LNumber Int(LType type, ByteBuffer buffer, int offset) {
+        LNumber num = Int(type, 0);
+        return num.parse(buffer, offset, num.getSize());
     }
 
-    public static LObject String(String value) {
-        return new RPCString(value);
+    public static LFloat Float(float number) {
+        return new LFloat(number);
+    }
+
+    public static LFloat Float(ByteBuffer buffer, int offset) {
+        LFloat num = Float(0);
+        return num.parse(buffer, offset, num.getSize());
+    }
+
+    public static LString String(String value) {
+        return new LString(value);
+    }
+
+    public static LString String(ByteBuffer buffer, int offset, int length) {
+        return String(null).parse(buffer, offset, length);
     }
 }

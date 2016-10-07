@@ -118,23 +118,20 @@ public class StreamParser {
             ByteBuffer buffer = ByteBuffer.allocate(LType.UINT16.getSize() * 3);
             buffer.put(bytes, 0, LType.UINT16.getSize() * 3);
 
-            LObjects.RPCUInt16 type = new LObjects.RPCUInt16(0);
-            type.parse(buffer, 0, type.getSize());
-            LObjects.RPCUInt16 size = new LObjects.RPCUInt16(0);
-            size.parse(buffer, LType.UINT16.getSize(), LType.UINT16.getSize());
-            LObjects.RPCUInt16 crc = new LObjects.RPCUInt16(0);
-            crc.parse(buffer, LType.UINT16.getSize() * 2, LType.UINT16.getSize());
+            int[] headerInts = new int[3];
+            for (int i = 0; i < headerInts.length; i++) {
+                headerInts[i] = (int) LObjects.Int(LType.UINT16, buffer, LType.UINT16.getSize() * i).getData();
+            }
+            this.type = (int) LObjects.Int(LType.UINT16, buffer, LType.UINT16.getSize() * 0).getData();
+            this.size = (int) LObjects.Int(LType.UINT16, buffer, LType.UINT16.getSize() * 1).getData();
+            this.crc = (int) LObjects.Int(LType.UINT16, buffer, LType.UINT16.getSize() * 2).getData();
 
-            this.type = (int) type.getData();
-            this.size = (int) size.getData();
-            this.crc = (int) crc.getData();
+            if (this.type == 0) {
+                throw new LSerializer.InvalidTypeException("Invalid type 0.");
+            }
 
             if (this.crc != CRC16.CRC(this.getTopBytes())) {
                 throw new LSerializer.InvalidTypeException("CRC's do not match.");
-            }
-
-            if (this.type == 0 && this.size == 0) {
-                throw new LSerializer.InvalidTypeException("Invalid type and size.");
             }
         }
 
@@ -142,8 +139,8 @@ public class StreamParser {
             ByteBuffer buffer = ByteBuffer.allocate(LType.UINT16.getSize() * 3);
             try {
                 buffer.put(this.getTopBytes(), 0, LType.UINT16.getSize() * 2);
-                LObject crc = new LObjects.RPCUInt16(this.crc);
-                buffer.put(crc.getBytes().array(), 0, LType.UINT16.getSize());
+                LObject crc = LObjects.Int(LType.UINT16, this.crc);
+                buffer.put(crc.getBytes().array(), 0, crc.getSize());
             } catch (LSerializer.InvalidTypeException e) {
                 // As we know the input data this should never throw an exception.
                 // If it has then it's cause for a fatal shutdown.
@@ -158,11 +155,11 @@ public class StreamParser {
         }
 
         private byte[] getTopBytes() throws LSerializer.InvalidTypeException {
-            LObject type = new LObjects.RPCUInt16(this.type);
-            LObject size = new LObjects.RPCUInt16(this.size);
-            ByteBuffer buffer = ByteBuffer.allocate(LType.UINT16.getSize() * 2);
-            buffer.put(type.getBytes().array(), 0, LType.UINT16.getSize());
-            buffer.put(size.getBytes().array(), 0, LType.UINT16.getSize());
+            LObject type = LObjects.Int(LType.UINT16, this.type);
+            LObject size = LObjects.Int(LType.UINT16, this.size);
+            ByteBuffer buffer = ByteBuffer.allocate(type.getSize() + size.getSize());
+            buffer.put(type.getBytes().array(), 0, type.getSize());
+            buffer.put(size.getBytes().array(), 0, size.getSize());
 
             return buffer.array();
         }

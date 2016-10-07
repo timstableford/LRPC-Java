@@ -52,13 +52,15 @@ public class Test {
         parser.addHandler(8, new StreamParser.StreamHandler() {
             @Override
             public void onPacket(int type, int size, ByteBuffer buffer) {
+                System.out.println("Type received - " + type);
                 LSerializer obj = new LSerializer();
                 try {
                     obj.unserialize(buffer);
+                    System.out.println("Static buffer object:");
+                    System.out.println(obj.toString());
                 } catch (LSerializer.InvalidTypeException e) {
                     e.printStackTrace();
                 }
-                System.out.println("Type received  - " + type);
             }
         });
 
