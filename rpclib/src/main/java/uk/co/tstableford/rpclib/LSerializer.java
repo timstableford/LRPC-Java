@@ -5,18 +5,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RPCObjectSerializer {
+public class LSerializer {
     private List<ObjectType> data;
 
-    public RPCObjectSerializer(List<ObjectType> data) {
+    public LSerializer(List<ObjectType> data) {
         this.data = data;
     }
 
-    public RPCObjectSerializer(RPCObjectSerializer.ObjectType... objects) {
+    public LSerializer(LSerializer.ObjectType... objects) {
         this.data = Arrays.asList(objects);
     }
 
-    public RPCObjectSerializer() {
+    public LSerializer() {
         this(new ArrayList<ObjectType>());
     }
 
@@ -27,7 +27,7 @@ public class RPCObjectSerializer {
     private int getStringOffset(int index) {
         int count = 0;
         for (int i = 0; i < index && i < this.data.size(); i++) {
-            if (this.data.get(i).getType() == RPCType.STRING) {
+            if (this.data.get(i).getType() == LType.STRING) {
                 count++;
             }
         }
@@ -63,20 +63,20 @@ public class RPCObjectSerializer {
 
     public void unserialize(ByteBuffer buffer) throws InvalidTypeException {
         buffer.position(0);
-        RPCObjects.RPCUInt8 size = new RPCObjects.RPCUInt8(0);
+        LObjects.RPCUInt8 size = new LObjects.RPCUInt8(0);
         size.parse(buffer, 0);
         this.data = new ArrayList<>((int)size.getData());
 
         int numStrings = 0;
         int sizes[] = new int[(int) size.getData()];
         for (int i = 0; i < size.getData(); i++) {
-            RPCObjects.RPCUInt8 typeId = new RPCObjects.RPCUInt8(0);
+            LObjects.RPCUInt8 typeId = new LObjects.RPCUInt8(0);
             typeId.parse(buffer, i + 1);
-            RPCType type = RPCType.findType((int) typeId.getData());
+            LType type = LType.findType((int) typeId.getData());
             if (type != null) {
                 sizes[i] = type.getSize();
-                if (type == RPCType.STRING) {
-                    RPCObjects.RPCUInt8 stringSize = new RPCObjects.RPCUInt8(0);
+                if (type == LType.STRING) {
+                    LObjects.RPCUInt8 stringSize = new LObjects.RPCUInt8(0);
                     stringSize.parse(buffer, (int) (1 + size.getData() + numStrings));
                     sizes[i] = (int) stringSize.getData();
                     numStrings++;
@@ -87,16 +87,16 @@ public class RPCObjectSerializer {
         // Set to the start of the data section.
         int dataOffset = (int) (1 + size.getData() + numStrings);
         for (int i = 0; i < size.getData(); i++) {
-            RPCObjects.RPCUInt8 typeId = new RPCObjects.RPCUInt8(0);
+            LObjects.RPCUInt8 typeId = new LObjects.RPCUInt8(0);
             typeId.parse(buffer, 1 + i);
-            RPCType type = RPCType.findType((int)typeId.getData());
+            LType type = LType.findType((int)typeId.getData());
 
             if (type == null) {
                 throw new InvalidTypeException("Unknown type - " + typeId.getData());
             }
             switch (type) {
                 case STRING:
-                    this.data.add(i, new RPCObjects.RPCString(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new LObjects.RPCString(buffer, dataOffset, sizes[i]));
                     break;
                 case INT8:
                 case UINT8:
@@ -105,10 +105,10 @@ public class RPCObjectSerializer {
                 case INT32:
                 case UINT32:
                 case INT64:
-                    this.data.add(RPCObjects.Int(type, 0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(LObjects.Int(type, 0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case FLOAT:
-                    this.data.add(i, new RPCObjects.RPCFloat(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, new LObjects.RPCFloat(0).parse(buffer, dataOffset, sizes[i]));
                 default:
                     throw new InvalidTypeException("Unsupported type - " + type.toString());
             }
@@ -121,20 +121,20 @@ public class RPCObjectSerializer {
             throw new InvalidTypeException("Too many data items!");
         }
 
-        int dataSize = RPCType.UINT8.getSize(); // Number of items.
-        dataSize += this.data.size() * RPCType.UINT8.getSize(); // One byte per item for identifier.
-        dataSize += this.getStringOffset(this.data.size()) * RPCType.STRING.getSize(); // Get the number of strings. Multiple by the number of bytes used for string size.
+        int dataSize = LType.UINT8.getSize(); // Number of items.
+        dataSize += this.data.size() * LType.UINT8.getSize(); // One byte per item for identifier.
+        dataSize += this.getStringOffset(this.data.size()) * LType.STRING.getSize(); // Get the number of strings. Multiple by the number of bytes used for string size.
         dataSize += this.getDataSize();
 
         ByteBuffer buffer = ByteBuffer.allocate(dataSize);
 
-        buffer.put(new RPCObjects.RPCUInt8(this.data.size()).getBytes().array(), 0, RPCType.UINT8.getSize());
+        buffer.put(new LObjects.RPCUInt8(this.data.size()).getBytes().array(), 0, LType.UINT8.getSize());
         for (ObjectType object: this.data) {
-            buffer.put(new RPCObjects.RPCUInt8(object.getType().getId()).getBytes().array(), 0, RPCType.UINT8.getSize());
+            buffer.put(new LObjects.RPCUInt8(object.getType().getId()).getBytes().array(), 0, LType.UINT8.getSize());
         }
         for (ObjectType object: this.data) {
-            if (object.getType() == RPCType.STRING) {
-                buffer.put(new RPCObjects.RPCUInt8(object.getSize()).getBytes().array(), 0, RPCType.UINT8.getSize());
+            if (object.getType() == LType.STRING) {
+                buffer.put(new LObjects.RPCUInt8(object.getSize()).getBytes().array(), 0, LType.UINT8.getSize());
             }
         }
         for (ObjectType object: this.data) {
@@ -161,7 +161,7 @@ public class RPCObjectSerializer {
 
     public interface ObjectType {
         int getSize();
-        RPCType getType();
+        LType getType();
         ByteBuffer getBytes() throws InvalidTypeException;
         ObjectType parse(ByteBuffer buffer, int offset, int size);
     }

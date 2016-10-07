@@ -1,6 +1,6 @@
 package uk.co.tstableford.rpclib;
 
-public enum RPCType {
+public enum LType {
     STRING(0x01, 0x01),
     INT8(0x02, 0x01),
     UINT8(0x03, 0x01),
@@ -13,7 +13,7 @@ public enum RPCType {
     FLOAT(0x0c, 0x04);
 
     private int size, id;
-    RPCType(int id, int size) {
+    LType(int id, int size) {
         this.size = size;
         this.id = id;
     }
@@ -26,8 +26,8 @@ public enum RPCType {
         return this.id;
     }
 
-    public static RPCType findType(int typeId) {
-        for (RPCType type: values()) {
+    public static LType findType(int typeId) {
+        for (LType type: values()) {
             if (type.id == typeId) {
                 return type;
             }
