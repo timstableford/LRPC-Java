@@ -1,5 +1,6 @@
 package uk.co.tstableford.rpctests;
 
+import uk.co.tstableford.rpclib.object.LObject;
 import uk.co.tstableford.rpclib.object.LObjects;
 import uk.co.tstableford.rpclib.object.LType;
 import uk.co.tstableford.rpclib.serializer.LSerializer;
@@ -10,6 +11,14 @@ import java.nio.ByteBuffer;
 
 public class Test {
     public static void main(String args[]) {
+        testBasicObject();
+        System.out.println();
+
+        testStreamParser();
+        System.out.println();
+    }
+
+    public static void testBasicObject() {
         LSerializer obj = new LSerializer(
                 LObjects.Int(LType.UINT16, 8),
                 LObjects.String("Hello world!"),
@@ -17,14 +26,13 @@ public class Test {
         try {
             ByteBuffer buffer = obj.serialize();
 
-            LSerializer rebuiltObj = new LSerializer();
-            rebuiltObj.unserialize(buffer);
+            LSerializer rebuiltObj = new LSerializer(buffer);
             System.out.println(rebuiltObj.toString());
+
+            System.out.println("testBasicObject PASS = " + obj.equals(rebuiltObj));
         } catch (LSerializer.InvalidTypeException e) {
             e.printStackTrace();
         }
-
-        testStreamParser();
     }
 
     public static void testStreamParser() {
@@ -53,11 +61,16 @@ public class Test {
             @Override
             public void onPacket(int type, int size, ByteBuffer buffer) {
                 System.out.println("Type received - " + type);
-                LSerializer obj = new LSerializer();
                 try {
-                    obj.unserialize(buffer);
+                    LSerializer obj = new LSerializer(buffer);
                     System.out.println("Static buffer object:");
                     System.out.println(obj.toString());
+                    boolean pass = LObjects.Int(LType.UINT16, 10).equals(obj.getData().get(0)) &&
+                            LObjects.Int(LType.INT8, 246).equals(obj.getData().get(1)) &&
+                            LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(2)) &&
+                            LObjects.Int(LType.INT16, 320).equals(obj.getData().get(3)) &&
+                            LObjects.String("hello world").equals(obj.getData().get(4));
+                    System.out.println("Stream parser static buffer test PASS = " + pass);
                 } catch (LSerializer.InvalidTypeException e) {
                     e.printStackTrace();
                 }

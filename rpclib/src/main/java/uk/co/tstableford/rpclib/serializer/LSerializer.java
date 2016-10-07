@@ -12,6 +12,11 @@ import java.util.List;
 public class LSerializer {
     private List<LObject> data;
 
+    public LSerializer(ByteBuffer buffer) throws InvalidTypeException {
+        this();
+        this.unserialize(buffer);
+    }
+
     public LSerializer(List<LObject> data) {
         this.data = data;
     }
@@ -173,7 +178,42 @@ public class LSerializer {
                     .append(this.data.get(i).toString())
                     .append("\n");
         }
+        // Remove trailing \n.
+        output.deleteCharAt(output.length() - 1);
         return output.toString();
+    }
+
+    public LObjects.LNumber intAt(int index) {
+        if (index >= this.data.size()) {
+            return null;
+        }
+        if (this.data.get(index) instanceof LObjects.LNumber) {
+            return (LObjects.LNumber) this.data.get(index);
+        }
+
+        return null;
+    }
+
+    public LObjects.LFloat floatAt(int index) {
+        if (index >= this.data.size()) {
+            return null;
+        }
+        if (this.data.get(index) instanceof LObjects.LFloat) {
+            return (LObjects.LFloat) this.data.get(index);
+        }
+
+        return null;
+    }
+
+    public LObjects.LString strAt(int index) {
+        if (index >= this.data.size()) {
+            return null;
+        }
+        if (this.data.get(index) instanceof LObjects.LString) {
+            return (LObjects.LString) this.data.get(index);
+        }
+
+        return null;
     }
 
     public static class InvalidTypeException extends Exception {
@@ -184,5 +224,32 @@ public class LSerializer {
         public InvalidTypeException() {
             super();
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof LSerializer)) {
+            return false;
+        }
+        LSerializer other = (LSerializer) obj;
+        if (other.data == null || this.data == null) {
+            return false;
+        }
+        if (this.data.size() != other.data.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < this.data.size(); i++) {
+            LObject otherObj = other.data.get(i);
+            LObject thisObj = this.data.get(i);
+            if (!otherObj.equals(thisObj)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

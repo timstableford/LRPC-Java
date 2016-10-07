@@ -64,6 +64,24 @@ public class LObjects {
         public String toString() {
             return this.data;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof LString)) {
+                return false;
+            }
+            LString other = (LString) obj;
+            if (this.data == null || other.data == null) {
+                return false;
+            }
+            if (!this.data.equals(other.data)) {
+                return false;
+            }
+            return true;
+        }
     }
 
     public static class LFloat implements LObject {
@@ -110,6 +128,21 @@ public class LObjects {
         public String toString() {
             return java.lang.Float.toString(this.data);
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof LFloat)) {
+                return false;
+            }
+            LFloat other = (LFloat) obj;
+            if (this.data != other.data) {
+                return false;
+            }
+            return true;
+        }
     }
 
     public static abstract class LNumber implements LObject {
@@ -152,6 +185,24 @@ public class LObjects {
         @Override
         public String toString() {
             return Long.toString(this.data);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof LNumber)) {
+                return false;
+            }
+            LNumber other = (LNumber) obj;
+            if (this.data != other.data) {
+                return false;
+            }
+            if (this.type != other.type) {
+                return false;
+            }
+            return true;
         }
     }
 
