@@ -35,7 +35,7 @@ public class StreamParser {
         }
     }
 
-    int parse() {
+    public int parse() {
         int readByte = connector.readData();
         if (readByte >= 0) {
             switch (state) {
@@ -71,8 +71,8 @@ public class StreamParser {
                             buffer.put(this.buffer, 0, this.header.getSize());
                             this.handlers.get(this.header.getType()).onPacket(this.header.getType(), this.header.getSize(), buffer);
                         }
+                        this.state = State.IDLE;
                     }
-                    this.state = State.IDLE;
                 }
             }
         }
@@ -131,6 +131,10 @@ public class StreamParser {
 
             if (this.crc != CRC16.CRC(this.getTopBytes())) {
                 throw new Object.InvalidTypeException("CRC's do not match.");
+            }
+
+            if (this.type == 0 && this.size == 0) {
+                throw new Object.InvalidTypeException("Invalid type and size.");
             }
         }
 
