@@ -1,5 +1,6 @@
 package uk.co.tstableford.rpctests;
 
+import uk.co.tstableford.rpclib.RPC;
 import uk.co.tstableford.rpclib.object.LObject;
 import uk.co.tstableford.rpclib.object.LObjects;
 import uk.co.tstableford.rpclib.object.LType;
@@ -56,26 +57,23 @@ public class Test {
             }
         };
 
-        StreamParser parser = new StreamParser(connector, new byte[1024]);
-        parser.addHandler(8, new StreamParser.StreamHandler() {
+        RPC rpc = new RPC();
+        rpc.addHandler(10, new RPC.Handler() {
             @Override
-            public void onPacket(int type, int size, ByteBuffer buffer) {
-                System.out.println("Type received - " + type);
-                try {
-                    LSerializer obj = new LSerializer(buffer);
-                    System.out.println("Static buffer object:");
-                    System.out.println(obj.toString());
-                    boolean pass = LObjects.Int(LType.UINT16, 10).equals(obj.getData().get(0)) &&
-                            LObjects.Int(LType.INT8, 246).equals(obj.getData().get(1)) &&
-                            LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(2)) &&
-                            LObjects.Int(LType.INT16, 320).equals(obj.getData().get(3)) &&
-                            LObjects.String("hello world").equals(obj.getData().get(4));
-                    System.out.println("Stream parser static buffer test PASS = " + pass);
-                } catch (LSerializer.InvalidTypeException e) {
-                    e.printStackTrace();
-                }
+            public void onRPC(LSerializer obj) {
+                System.out.println("RPC Callback received.");
+                System.out.println(obj.toString());
+                boolean pass = LObjects.Int(LType.UINT16, 10).equals(obj.getData().get(0)) &&
+                        LObjects.Int(LType.INT8, 246).equals(obj.getData().get(1)) &&
+                        LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(2)) &&
+                        LObjects.Int(LType.INT16, 320).equals(obj.getData().get(3)) &&
+                        LObjects.String("hello world").equals(obj.getData().get(4));
+                System.out.println("Stream parser static buffer test PASS = " + pass);
             }
         });
+
+        StreamParser parser = new StreamParser(connector, new byte[1024]);
+        parser.addHandler(RPC.RPC_PACKET_ID, rpc);
 
         while (parser.parse() >= 0);
     }
