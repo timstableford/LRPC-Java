@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class StreamParser {
-    private static final int HEADER_SIZE = LSerializer.Type.UINT16.getSize() * 3;
+    private static final int HEADER_SIZE = LType.UINT16.getSize() * 3;
     private StreamConnector connector;
     private State state;
     private byte[] headerBytes = new byte[HEADER_SIZE];
@@ -115,15 +115,15 @@ public class StreamParser {
             if (bytes.length < 6) {
                 throw new LSerializer.InvalidTypeException("Input data length too short.");
             }
-            ByteBuffer buffer = ByteBuffer.allocate(LSerializer.Type.UINT16.getSize() * 3);
-            buffer.put(bytes, 0, LSerializer.Type.UINT16.getSize() * 3);
+            ByteBuffer buffer = ByteBuffer.allocate(LType.UINT16.getSize() * 3);
+            buffer.put(bytes, 0, LType.UINT16.getSize() * 3);
 
             LObjects.RPCUInt16 type = new LObjects.RPCUInt16(0);
             type.parse(buffer, 0, type.getSize());
             LObjects.RPCUInt16 size = new LObjects.RPCUInt16(0);
-            size.parse(buffer, LSerializer.Type.UINT16.getSize(), LSerializer.Type.UINT16.getSize());
+            size.parse(buffer, LType.UINT16.getSize(), LType.UINT16.getSize());
             LObjects.RPCUInt16 crc = new LObjects.RPCUInt16(0);
-            crc.parse(buffer, LSerializer.Type.UINT16.getSize() * 2, LSerializer.Type.UINT16.getSize());
+            crc.parse(buffer, LType.UINT16.getSize() * 2, LType.UINT16.getSize());
 
             this.type = (int) type.getData();
             this.size = (int) size.getData();
@@ -139,11 +139,11 @@ public class StreamParser {
         }
 
         public byte[] getBytes() {
-            ByteBuffer buffer = ByteBuffer.allocate(LSerializer.Type.UINT16.getSize() * 3);
+            ByteBuffer buffer = ByteBuffer.allocate(LType.UINT16.getSize() * 3);
             try {
-                buffer.put(this.getTopBytes(), 0, LSerializer.Type.UINT16.getSize() * 2);
-                LSerializer.ObjectType crc = new LObjects.RPCUInt16(this.crc);
-                buffer.put(crc.getBytes().array(), 0, LSerializer.Type.UINT16.getSize());
+                buffer.put(this.getTopBytes(), 0, LType.UINT16.getSize() * 2);
+                LObject crc = new LObjects.RPCUInt16(this.crc);
+                buffer.put(crc.getBytes().array(), 0, LType.UINT16.getSize());
             } catch (LSerializer.InvalidTypeException e) {
                 // As we know the input data this should never throw an exception.
                 // If it has then it's cause for a fatal shutdown.
@@ -158,11 +158,11 @@ public class StreamParser {
         }
 
         private byte[] getTopBytes() throws LSerializer.InvalidTypeException {
-            LSerializer.ObjectType type = new LObjects.RPCUInt16(this.type);
-            LSerializer.ObjectType size = new LObjects.RPCUInt16(this.size);
-            ByteBuffer buffer = ByteBuffer.allocate(LSerializer.Type.UINT16.getSize() * 2);
-            buffer.put(type.getBytes().array(), 0, LSerializer.Type.UINT16.getSize());
-            buffer.put(size.getBytes().array(), 0, LSerializer.Type.UINT16.getSize());
+            LObject type = new LObjects.RPCUInt16(this.type);
+            LObject size = new LObjects.RPCUInt16(this.size);
+            ByteBuffer buffer = ByteBuffer.allocate(LType.UINT16.getSize() * 2);
+            buffer.put(type.getBytes().array(), 0, LType.UINT16.getSize());
+            buffer.put(size.getBytes().array(), 0, LType.UINT16.getSize());
 
             return buffer.array();
         }

@@ -96,7 +96,7 @@ public class LSerializer {
             }
             switch (type) {
                 case STRING:
-                    this.data.add(i, new LObjects.RPCString(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, LObjects.String(null).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case INT8:
                 case UINT8:
@@ -108,7 +108,7 @@ public class LSerializer {
                     this.data.add(LObjects.Int(type, 0).parse(buffer, dataOffset, sizes[i]));
                     break;
                 case FLOAT:
-                    this.data.add(i, new LObjects.RPCFloat(0).parse(buffer, dataOffset, sizes[i]));
+                    this.data.add(i, LObjects.Float(0).parse(buffer, dataOffset, sizes[i]));
                 default:
                     throw new InvalidTypeException("Unsupported type - " + type.toString());
             }
