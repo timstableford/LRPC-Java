@@ -11,6 +11,8 @@ import java.nio.ByteBuffer;
 
 public class Test {
     public static void main(String args[]) {
+        SerialConnectorPing serialConnectorPing = new SerialConnectorPing();
+
         testBasicObject();
         System.out.println();
 

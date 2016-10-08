@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 
 import uk.co.tstableford.rpc.lib.stream.StreamConnector;
 
-class SerialConnector implements StreamConnector {
+public class SerialConnector implements StreamConnector {
     private SerialPort serialPort;
     public SerialConnector(SerialPort port) {
         this.serialPort = port;
