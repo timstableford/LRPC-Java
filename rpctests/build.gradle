@@ -21,10 +21,14 @@ jar {
   }
 }
 
-task runApp(type: JavaExec) {
+task runTest(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-
     main = 'uk.co.tstableford.rpctests.Test'
+}
+
+task runPing(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'uk.co.tstableford.rpctests.SerialConnectorPing'
 }
 
 repositories {

@@ -11,8 +11,6 @@ import java.nio.ByteBuffer;
 
 public class Test {
     public static void main(String args[]) {
-        SerialConnectorPing serialConnectorPing = new SerialConnectorPing();
-
         testBasicObject();
         System.out.println();
 
@@ -38,7 +36,7 @@ public class Test {
     }
 
     public static void testStreamParser() {
-        final byte testCallBuffer[] = { 0x0, 0x8, 0x0, 0x19, 0x79, (byte) 0xae, 0x5, 0x5, 0x2, 0x3, 0x4, 0x1, 0xc, 0x0, 0xa, (byte) 0xf6, 0xa, 0x1, 0x40, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x0 };
+        final byte testCallBuffer[] = { 0x0, 0x8, 0x0, 0x19, (byte) 0xae, 0x79, 0x5, 0x5, 0x2, 0x3, 0x4, 0x1, 0xc, 0x0, 0xa, (byte) 0xf6, 0xa, 0x1, 0x40, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x0 };
 
         StreamConnector connector = new StreamConnector() {
             int testCallIndex = 0;
@@ -58,17 +56,16 @@ public class Test {
             }
         };
 
-        RPC rpc = new RPC();
+        RPC rpc = new RPC(connector);
         rpc.addHandler(10, new RPC.Handler() {
             @Override
             public void onRPC(LSerializer obj) {
                 System.out.println("RPC Callback received.");
                 System.out.println(obj.toString());
-                boolean pass = LObjects.Int(LType.UINT16, 10).equals(obj.getData().get(0)) &&
-                        LObjects.Int(LType.INT8, 246).equals(obj.getData().get(1)) &&
-                        LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(2)) &&
-                        LObjects.Int(LType.INT16, 320).equals(obj.getData().get(3)) &&
-                        LObjects.String("hello world").equals(obj.getData().get(4));
+                boolean pass = LObjects.Int(LType.INT8, 246).equals(obj.getData().get(0)) &&
+                        LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(1)) &&
+                        LObjects.Int(LType.INT16, 320).equals(obj.getData().get(2)) &&
+                        LObjects.String("hello world").equals(obj.getData().get(3));
                 System.out.println("Stream parser static buffer test PASS = " + pass);
             }
         });

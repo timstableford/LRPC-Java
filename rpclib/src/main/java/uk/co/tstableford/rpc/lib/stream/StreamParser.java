@@ -89,7 +89,15 @@ public class StreamParser {
         void onPacket(int type, int size, ByteBuffer buffer);
     }
 
-    private class Header {
+    public static byte[] WrapBuffer(int type, ByteBuffer buffer) {
+        Header header = new Header(type, buffer.capacity());
+        ByteBuffer outBuffer = ByteBuffer.allocate(header.getBytes().length + buffer.capacity());
+        outBuffer.put(header.getBytes());
+        outBuffer.put(buffer.array());
+        return outBuffer.array();
+    }
+
+    private static class Header {
         private int type, size, crc;
         public Header(int type, int size) {
             this.type = type;

@@ -15,10 +15,6 @@ public class CRC16 {
             }
         }
 
-        short crc16 = (short)(crc & 0xffff);
-        crc16 = Short.reverseBytes(crc16);
-        crc = (int) (crc16 & 0xffff);
-
         crc &= 0xffff;
         return crc;
     }
