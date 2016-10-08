@@ -327,9 +327,6 @@ public class LObjects {
 
         @Override
         public ByteBuffer getBytes() throws LSerializer.InvalidTypeException {
-            if (this.data > Integer.MAX_VALUE || this.data < Integer.MIN_VALUE) {
-                throw new LSerializer.InvalidTypeException();
-            }
             return ByteBuffer.allocate(this.getSize()).putLong(this.data);
         }
 
