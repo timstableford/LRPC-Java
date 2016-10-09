@@ -28,7 +28,7 @@ public class RPC implements StreamParser.StreamHandler {
         }
     }
 
-    public void call(int functionId, LSerializer obj) throws LSerializer.InvalidTypeException {
+    public synchronized void call(int functionId, LSerializer obj) throws LSerializer.InvalidTypeException {
         List<LObject> data = new ArrayList<>(obj.getData());
         data.add(0, LObjects.Int(LType.UINT16, functionId));
         LSerializer send = new LSerializer(data);
