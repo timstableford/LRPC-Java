@@ -2,12 +2,15 @@ package uk.co.tstableford.rpctests;
 
 import com.fazecast.jSerialComm.SerialPort;
 import uk.co.tstableford.rpc.lib.RPC;
+import uk.co.tstableford.rpc.lib.object.LObject;
 import uk.co.tstableford.rpc.lib.object.LObjects;
 import uk.co.tstableford.rpc.lib.object.LType;
 import uk.co.tstableford.rpc.lib.serializer.LSerializer;
 import uk.co.tstableford.rpc.lib.stream.StreamConnector;
 import uk.co.tstableford.rpc.lib.stream.StreamParser;
 import uk.co.tstableford.rpc.connectors.pc.SerialConnector;
+
+import java.util.concurrent.TimeUnit;
 
 public class SerialConnectorPing {
     private static final int PING_FID = 1;
@@ -18,41 +21,53 @@ public class SerialConnectorPing {
     private boolean run;
     private Thread readThread, writeThread;
 
-    public SerialConnectorPing() {
-        SerialPort[] ports = SerialPort.getCommPorts();
-        this.serialPort = null;
-        for (SerialPort port: ports) {
-            System.out.println(port.getSystemPortName());
-            if (port.getSystemPortName().contains("ACM") ||
-                    port.getSystemPortName().contains("USB")) {
-                this.serialPort = port;
-                break;
+    public SerialConnectorPing(String portDescriptor) {
+        if (portDescriptor == null) {
+            SerialPort[] ports = SerialPort.getCommPorts();
+            this.serialPort = null;
+            for (SerialPort port : ports) {
+                System.out.println(port.getSystemPortName());
+                if (port.getSystemPortName().contains("ACM") ||
+                        port.getSystemPortName().contains("USB") ||
+                        port.getSystemPortName().contains("rfcomm")) {
+                    this.serialPort = port;
+                }
             }
+        } else {
+            this.serialPort = SerialPort.getCommPort(portDescriptor);
         }
 
-        serialPort.setBaudRate(115200);
+        serialPort.setBaudRate(9600);
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 1000, 0);
 
         SerialConnector serialConnector = new SerialConnector(serialPort);
         this.rpc = new RPC(serialConnector);
-        this.rpc.addHandler(PING_FID, new RPC.Handler() {
+        this.rpc.addHandler(new RPC.Handler() {
             @Override
-            public void onRPC(LSerializer object) {
-                LSerializer response = new LSerializer(LObjects.Int(LType.INT64, System.currentTimeMillis()));
-                System.out.println("Received ping");
-                System.out.println(object.toString());
-                try {
-                    rpc.call(PONG_FID, response);
-                } catch (LSerializer.InvalidTypeException e) {
-                    e.printStackTrace();
+            public boolean onRPC(int functionId, LSerializer object) {
+                switch (functionId) {
+                    case PING_FID:
+                    {
+                        LSerializer response = new LSerializer(LObjects.Int(LType.INT64, System.currentTimeMillis()));
+                        System.out.println("Received ping");
+                        System.out.println(object.toString());
+                        try {
+                            rpc.call(PONG_FID, response);
+                        } catch (LSerializer.InvalidTypeException e) {
+                            e.printStackTrace();
+                        }
+                        return true;
+                    }
+                    case PONG_FID:
+                    {
+                        long time = System.currentTimeMillis();
+                        System.out.println("Local time is " + time);
+                        System.out.println("Time from device is " + object.intAt(0));
+                        return true;
+                    }
+                    default:
+                        return false;
                 }
-            }
-        });
-        this.rpc.addHandler(PONG_FID, new RPC.Handler() {
-            @Override
-            public void onRPC(LSerializer object) {
-                long time = System.currentTimeMillis();
-                System.out.println("Local time is " + time);
-                System.out.println("Time from device is " + object.intAt(0));
             }
         });
 
@@ -60,7 +75,7 @@ public class SerialConnectorPing {
         this.parser.addHandler(RPC.RPC_PACKET_ID, rpc);
     }
 
-    public void start() {
+    private void start() {
         serialPort.openPort();
         if (!this.run) {
             this.run = true;
@@ -115,8 +130,13 @@ public class SerialConnectorPing {
 
     public static void main(String[] args) {
         System.out.println("Running ping pong for 10 seconds.");
-        SerialConnectorPing ping = new SerialConnectorPing();
+        String port = null;
+        if (args.length > 0) {
+            port = args[0];
+        }
+        SerialConnectorPing ping = new SerialConnectorPing(port);
         ping.start();
+
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
@@ -125,5 +145,6 @@ public class SerialConnectorPing {
         System.out.println("Stopping.");
         ping.stop();
         System.out.println("Stopped.");
+
     }
 }

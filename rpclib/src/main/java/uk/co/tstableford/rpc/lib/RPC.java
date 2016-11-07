@@ -14,17 +14,17 @@ import java.util.List;
 
 public class RPC implements StreamParser.StreamHandler {
     public static final int RPC_PACKET_ID = 8;
-    private HashMap<Integer, Handler> handlers;
+    private List<Handler> handlers;
     private StreamConnector connector;
 
     public RPC(StreamConnector connector) {
         this.connector = connector;
-        this.handlers = new HashMap<>();
+        this.handlers = new ArrayList<Handler>();
     }
 
-    public void removeHandler(int functionId) {
-        if (this.handlers.containsKey(functionId)) {
-            this.handlers.remove(functionId);
+    public void removeHandler(Handler handler) {
+        if (this.handlers.contains(handler)) {
+            this.handlers.remove(handler);
         }
     }
 
@@ -35,8 +35,8 @@ public class RPC implements StreamParser.StreamHandler {
         connector.writeData(StreamParser.WrapBuffer(RPC.RPC_PACKET_ID, send.serialize()));
     }
 
-    public void addHandler(int functionId, Handler handler) {
-        this.handlers.put(functionId, handler);
+    public void addHandler(Handler handler) {
+        this.handlers.add(handler);
     }
 
     @Override
@@ -45,10 +45,11 @@ public class RPC implements StreamParser.StreamHandler {
             try {
                 LSerializer object = new LSerializer(buffer);
                 int functionId = (int) object.intAt(0).getData();
-                if (this.handlers.containsKey(functionId)) {
-                    // Remove function ID
-                    object.getData().remove(0);
-                    this.handlers.get(functionId).onRPC(object);
+                object.getData().remove(0);
+                for (Handler handler: handlers) {
+                    if (handler.onRPC(functionId, object)) {
+                        break;
+                    }
                 }
             } catch (LSerializer.InvalidTypeException e) {
                 System.err.println("Failed to de-serialize object [" + buffer.toString() + "]");
@@ -59,6 +60,6 @@ public class RPC implements StreamParser.StreamHandler {
     }
 
     public interface Handler {
-        void onRPC(LSerializer object);
+        boolean onRPC(int functionId, LSerializer object);
     }
 }

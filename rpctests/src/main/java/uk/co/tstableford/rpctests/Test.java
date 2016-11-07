@@ -57,16 +57,20 @@ public class Test {
         };
 
         RPC rpc = new RPC(connector);
-        rpc.addHandler(10, new RPC.Handler() {
+        rpc.addHandler(new RPC.Handler() {
             @Override
-            public void onRPC(LSerializer obj) {
-                System.out.println("RPC Callback received.");
-                System.out.println(obj.toString());
-                boolean pass = LObjects.Int(LType.INT8, 246).equals(obj.getData().get(0)) &&
-                        LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(1)) &&
-                        LObjects.Int(LType.INT16, 320).equals(obj.getData().get(2)) &&
-                        LObjects.String("hello world").equals(obj.getData().get(3));
-                System.out.println("Stream parser static buffer test PASS = " + pass);
+            public boolean onRPC(int functionId, LSerializer obj) {
+                if (functionId == 10) {
+                    System.out.println("RPC Callback received.");
+                    System.out.println(obj.toString());
+                    boolean pass = LObjects.Int(LType.INT8, 246).equals(obj.getData().get(0)) &&
+                            LObjects.Int(LType.UINT8, 10).equals(obj.getData().get(1)) &&
+                            LObjects.Int(LType.INT16, 320).equals(obj.getData().get(2)) &&
+                            LObjects.String("hello world").equals(obj.getData().get(3));
+                    System.out.println("Stream parser static buffer test PASS = " + pass);
+                    return true;
+                }
+                return false;
             }
         });
 
