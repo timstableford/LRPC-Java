@@ -8,9 +8,11 @@ import java.nio.charset.Charset;
 public class LObjects {
     public static class LString implements LObject {
         private String data;
+        private boolean nullTerminator;
 
-        public LString(String data) {
+        public LString(String data, boolean nullTerminator) {
             this.data = data;
+            this.nullTerminator = nullTerminator;
         }
 
         public LString(ByteBuffer buffer, int offset, int size) {
@@ -28,7 +30,7 @@ public class LObjects {
         @Override
         public int getSize() {
             // +1 for the null terminator.
-            return this.data.length() + 1;
+            return this.data.length() + (this.nullTerminator ? 1 : 0);
         }
 
         @Override
@@ -41,9 +43,11 @@ public class LObjects {
             if (this.data.length() > 255) {
                 throw new LSerializer.InvalidTypeException();
             }
-            ByteBuffer buffer = ByteBuffer.allocate(this.getSize() + 1);
+            ByteBuffer buffer = ByteBuffer.allocate(this.getSize() + (nullTerminator ? 1 : 0));
             buffer.put(this.data.getBytes(Charset.forName("UTF-8")));
-            buffer.put((byte) 0x00);
+            if (nullTerminator) {
+                buffer.put((byte) 0x00);
+            }
             return buffer;
         }
 
@@ -372,8 +376,10 @@ public class LObjects {
     }
 
     public static LString String(String value) {
-        return new LString(value);
+        return new LString(value, false);
     }
+
+    public static LString String(String value, boolean nullTerminator) { return new LString(value, nullTerminator); }
 
     public static LString String(ByteBuffer buffer, int offset, int length) {
         return String(null).parse(buffer, offset, length);
